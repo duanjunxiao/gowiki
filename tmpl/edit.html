@@ -1,14 +1,14 @@
 <html>
-  <head>
+<head>
     <title>{{.Title}} : Edit - Wiki</title>
-  </head>
+</head>
 
-  <body>
-    <h1>Editing {{.Title}}</h1>
+<body>
+<h2>Editing {{.Title}}</h2>
 
-    <form action="/save/{{.Title}}" method="POST">
-      <div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
-      <div><input type="submit" value="Save"></div>
-    </form>
-  </body>
+<form action="/save/{{.Title}}" method="POST">
+    <div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
+    <div><input type="submit" value="Save"></div>
+</form>
+</body>
 </html>

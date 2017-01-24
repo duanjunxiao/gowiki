@@ -1,1 +1,1 @@
-Welcome to Go Wiki. See more about go wiki at http://golang.org/doc/articles/wiki.
+<a href="aaa">aaa</a> <br/><a href="bbb">bbb</a> <br/><a href="ddd">ddd</a> <br/><a href="index">index</a> <br/>

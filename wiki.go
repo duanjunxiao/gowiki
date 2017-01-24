@@ -2,12 +2,12 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 	"text/template"
+	"strings"
 )
 
 var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
@@ -29,6 +29,9 @@ func loadPage(title string) (*Page, error) {
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
+	}
+	if title == "index" {
+		go handleIndex()
 	}
 	return &Page{Title: title, Body: body}, nil
 }
@@ -88,6 +91,38 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	http.Redirect(w, r, "/view/" + title, http.StatusFound)
 }
 
+//获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
+func ListDirFilename(dirPth string, suffix string) (filenames []string, err error) {
+	filenames = make([]string, 0, 10)
+	dir, err := ioutil.ReadDir(dirPth)
+	if err != nil {
+		return nil, err
+	}
+	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
+	for _, fi := range dir {
+		if fi.IsDir() {
+			// 忽略目录
+			continue
+		}
+		if strings.HasSuffix(strings.ToUpper(fi.Name()), suffix) {
+			//匹配文件
+			filename := strings.Split(fi.Name(), ".txt")
+			filenames = append(filenames, filename[0])
+		}
+	}
+	return filenames, nil
+}
+
+func handleIndex() {
+	files, _ := ListDirFilename("data", "txt")
+	var body string
+	for _, filename := range files {
+		body += fmt.Sprintf("<a href=\"%s\">%s</a> <br/>", filename, filename)
+	}
+	p := &Page{Title: "index", Body:[]byte(body)}
+	p.save()
+}
+
 func rootHandler(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/view/index", http.StatusFound)
 }
@@ -104,7 +139,9 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 }
 
 func main() {
-	flag.Parse()
+
+	go handleIndex()
+
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
